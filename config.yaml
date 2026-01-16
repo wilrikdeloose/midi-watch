@@ -1,0 +1,17 @@
+global:
+  strip_to_notes: true
+  force_channel_zero: true
+
+rules:
+  bass:
+    filename_contains:
+      - "bass"
+    transpose_semitones: 12
+    track_name: "Bass"
+  drums:
+    filename_contains:
+      - "drum"
+    max_note_length: "1/8"
+    track_name: "Drums"
+  wildcard:
+    track_name: "Other"
