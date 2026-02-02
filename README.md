@@ -48,6 +48,9 @@ The application is configured via `config.yaml`, which must be placed next to th
 global:
   strip_to_notes: <boolean>
   force_channel_zero: <boolean>
+  ignore_filename_contains: <list of strings (optional)>
+  ignore_folders: <list of folder names (optional)>
+  strip_keep_meta: <list of meta subtypes (optional)>
 
 rules:
   bass:
@@ -74,6 +77,21 @@ rules:
 - **Type**: `boolean`
 - **Description**: If `true`, sets all note events to MIDI channel 0 (channel 1 in MIDI terminology).
 - **Example**: `force_channel_zero: true`
+
+#### `global.ignore_filename_contains`
+- **Type**: list of strings (optional, default: `[]`)
+- **Description**: Files whose filename contains any of these strings (case-insensitive) are skipped entirely—not scanned initially and not processed when created or modified. Useful for excluding backups, imports, or temp files.
+- **Example**: `ignore_filename_contains: ["imported", "temp", "bak"]`
+
+#### `global.ignore_folders`
+- **Type**: list of strings (optional, default: `[]`)
+- **Description**: Entire subfolders to skip: any file whose path contains a directory with one of these names (case-insensitive) is ignored. The scanner does not descend into these folders; the watcher skips events for files in them. Useful for excluding DAW project folders (e.g. `reaper`).
+- **Example**: `ignore_folders: ["reaper"]`
+
+#### `global.strip_keep_meta`
+- **Type**: list of strings (optional, default: `[]`)
+- **Description**: When `strip_to_notes` is enabled, these meta message subtypes are kept in addition to notes and `end_of_track`. Common values: `set_tempo` (tempo changes), `time_signature`, `key_signature`.
+- **Example**: `strip_keep_meta: ["set_tempo"]`
 
 ### Rules
 

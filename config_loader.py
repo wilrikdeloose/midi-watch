@@ -11,6 +11,9 @@ class GlobalConfig:
     """Global transformation settings."""
     strip_to_notes: bool
     force_channel_zero: bool
+    ignore_filename_contains: List[str]
+    ignore_folders: List[str]
+    strip_keep_meta: List[str]
 
 
 @dataclass
@@ -58,8 +61,11 @@ class Config:
         rules_data = data.get("rules", {})
 
         global_config = GlobalConfig(
-            strip_to_notes=global_data["strip_to_notes"],
-            force_channel_zero=global_data["force_channel_zero"],
+            strip_to_notes=global_data.get("strip_to_notes", True),
+            force_channel_zero=global_data.get("force_channel_zero", True),
+            ignore_filename_contains=global_data.get("ignore_filename_contains", []),
+            ignore_folders=global_data.get("ignore_folders", []),
+            strip_keep_meta=global_data.get("strip_keep_meta", []),
         )
 
         bass_data = rules_data.get("bass", {})

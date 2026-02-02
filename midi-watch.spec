@@ -1,4 +1,6 @@
 # -*- mode: python ; coding: utf-8 -*-
+import os
+import shutil
 
 block_cipher = None
 
@@ -41,3 +43,14 @@ exe = EXE(
     codesign_identity=None,
     entitlements_file=None,
 )
+
+# Copy root config.yaml to dist so the executable has a default config next to it
+# DISTPATH is injected by PyInstaller and points to the dist folder (e.g. project/dist)
+_spec_dir = os.path.dirname(DISTPATH)
+_config_src = os.path.join(_spec_dir, 'config.yaml')
+_config_dst = os.path.join(DISTPATH, 'config.yaml')
+if os.path.exists(_config_src):
+    shutil.copy2(_config_src, _config_dst)
+    print(f"Copied config.yaml to {_config_dst}")
+else:
+    print(f"Warning: {_config_src} not found, skipping config copy")

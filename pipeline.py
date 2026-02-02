@@ -16,9 +16,9 @@ def process_midi(midi: mido.MidiFile, file_path: str, config: Config) -> mido.Mi
     """Apply all transformations to MIDI file based on config and filename."""
     filename_lower = os.path.basename(file_path).lower()
     
-    # 1. Global: Strip to notes (preserve timing)
+    # 1. Global: Strip to notes (preserve timing), optionally keep meta (e.g. set_tempo)
     if config.global_.strip_to_notes:
-        midi = strip_to_notes(midi)
+        midi = strip_to_notes(midi, keep_meta_subtypes=config.global_.strip_keep_meta)
     
     # 2. Check for specific filename rules
     bass_match = any(keyword in filename_lower for keyword in config.rules.bass.filename_contains)

@@ -1,6 +1,17 @@
 global:
   strip_to_notes: true
   force_channel_zero: true
+  # Skip files whose filename contains any of these (case-insensitive)
+  ignore_filename_contains:
+    - imported
+    - temp
+    - bak
+  # Skip entire subfolders: any file under a folder with this name is ignored (case-insensitive)
+  ignore_folders:
+    - Reaper
+  # When stripping to notes, keep these meta message types (e.g. set_tempo for tempo changes)
+  strip_keep_meta:
+    - set_tempo
 
 rules:
   bass:

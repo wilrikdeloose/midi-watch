@@ -12,6 +12,18 @@ from pipeline import process_midi
 def process_file(file_path: str, config, watcher=None) -> bool:
     """Process a single MIDI file. Returns True if file was modified."""
     try:
+        # Skip if filename contains any ignore word
+        if config.global_.ignore_filename_contains:
+            filename_lower = os.path.basename(file_path).lower()
+            if any(ignore in filename_lower for ignore in config.global_.ignore_filename_contains):
+                return False
+        # Skip if path contains any ignored folder name (e.g. .../reaper/...)
+        if config.global_.ignore_folders:
+            path_parts = os.path.normpath(file_path).split(os.sep)
+            ignore_folders_lower = [f.lower() for f in config.global_.ignore_folders]
+            if any(part.lower() in ignore_folders_lower for part in path_parts):
+                return False
+        
         # Read MIDI file
         midi = read_midi_with_retry(file_path)
         if midi is None:
@@ -96,7 +108,11 @@ def main():
     
     # Initial scan and process
     print("Scanning for MIDI files...")
-    midi_files = scan_midi_files(work_dir)
+    midi_files = scan_midi_files(
+            work_dir,
+            config.global_.ignore_filename_contains,
+            config.global_.ignore_folders,
+        )
     print(f"Found {len(midi_files)} MIDI file(s)")
     print()
     

@@ -3,8 +3,10 @@ from typing import List, Dict, Tuple, Optional
 import mido
 
 
-def strip_to_notes(midi: mido.MidiFile) -> mido.MidiFile:
-    """Strip all events except notes and end_of_track, preserving timing."""
+def strip_to_notes(midi: mido.MidiFile, keep_meta_subtypes: List[str] = None) -> mido.MidiFile:
+    """Strip all events except notes, end_of_track, and optionally other meta types (e.g. set_tempo)."""
+    if keep_meta_subtypes is None:
+        keep_meta_subtypes = []
     new_tracks = []
     
     for track in midi.tracks:
@@ -14,13 +16,17 @@ def strip_to_notes(midi: mido.MidiFile) -> mido.MidiFile:
         for msg in track:
             accumulated_time += msg.time
             
-            # Keep note events and end_of_track
-            if msg.type in ('note_on', 'note_off') or (
-                msg.type == 'meta_message' and msg.subtype == 'end_of_track'
-            ):
-                # Create new message with accumulated time
+            keep = False
+            if msg.type in ('note_on', 'note_off'):
+                keep = True
+            elif msg.type == 'meta_message':
+                if msg.subtype == 'end_of_track' or msg.subtype in keep_meta_subtypes:
+                    keep = True
+            
+            if keep:
                 if msg.type == 'meta_message':
-                    new_msg = mido.MetaMessage(msg.subtype, time=accumulated_time)
+                    new_msg = msg.copy(time=accumulated_time)
+                    new_track.append(new_msg)
                 else:
                     new_msg = mido.Message(
                         msg.type,
@@ -29,7 +35,7 @@ def strip_to_notes(midi: mido.MidiFile) -> mido.MidiFile:
                         velocity=msg.velocity,
                         time=accumulated_time
                     )
-                new_track.append(new_msg)
+                    new_track.append(new_msg)
                 accumulated_time = 0
         
         new_tracks.append(new_track)
