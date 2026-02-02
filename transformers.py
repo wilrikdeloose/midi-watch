@@ -19,15 +19,12 @@ def strip_to_notes(midi: mido.MidiFile, keep_meta_subtypes: List[str] = None) ->
             keep = False
             if msg.type in ('note_on', 'note_off'):
                 keep = True
-            elif msg.type == 'meta_message':
-                if msg.subtype == 'end_of_track' or msg.subtype in keep_meta_subtypes:
-                    keep = True
+            elif msg.type == 'end_of_track' or msg.type in keep_meta_subtypes:
+                # In mido, meta messages use .type for the specific type (set_tempo, end_of_track), not 'meta_message'
+                keep = True
             
             if keep:
-                if msg.type == 'meta_message':
-                    new_msg = msg.copy(time=accumulated_time)
-                    new_track.append(new_msg)
-                else:
+                if msg.type in ('note_on', 'note_off'):
                     new_msg = mido.Message(
                         msg.type,
                         channel=msg.channel,
@@ -35,6 +32,9 @@ def strip_to_notes(midi: mido.MidiFile, keep_meta_subtypes: List[str] = None) ->
                         velocity=msg.velocity,
                         time=accumulated_time
                     )
+                    new_track.append(new_msg)
+                else:
+                    new_msg = msg.copy(time=accumulated_time)
                     new_track.append(new_msg)
                 accumulated_time = 0
         
@@ -192,7 +192,7 @@ def set_track_names(midi: mido.MidiFile, track_name: str) -> mido.MidiFile:
         
         for msg in track:
             # Replace existing track_name meta messages
-            if msg.type == 'meta_message' and msg.subtype == 'track_name':
+            if msg.type == 'track_name':
                 # Replace with new track name, preserve the time
                 new_track.append(mido.MetaMessage('track_name', name=track_name, time=msg.time))
                 track_name_set = True
