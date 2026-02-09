@@ -30,7 +30,7 @@ def scan_midi_files(
                 continue
             if ignore_filename_contains:
                 file_lower = file.lower()
-                if any(ignore in file_lower for ignore in ignore_filename_contains):
+                if any(ignore.lower() in file_lower for ignore in ignore_filename_contains):
                     continue
             full_path = os.path.join(root, file)
             midi_files.append(full_path)

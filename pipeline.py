@@ -16,13 +16,20 @@ def process_midi(midi: mido.MidiFile, file_path: str, config: Config) -> mido.Mi
     """Apply all transformations to MIDI file based on config and filename."""
     filename_lower = os.path.basename(file_path).lower()
     
-    # 1. Global: Strip to notes (preserve timing), optionally keep meta (e.g. set_tempo)
+    # 1. Global: Strip to notes (preserve timing), optionally keep meta and channel types (e.g. set_tempo, pitchwheel)
     if config.global_.strip_to_notes:
-        midi = strip_to_notes(midi, keep_meta_subtypes=config.global_.strip_keep_meta)
+        midi = strip_to_notes(
+            midi,
+            keep_meta_subtypes=config.global_.strip_keep_meta,
+            keep_channel_types=config.global_.strip_keep_channel,
+        )
     
-    # 2. Check for specific filename rules
-    bass_match = any(keyword in filename_lower for keyword in config.rules.bass.filename_contains)
-    drums_match = any(keyword in filename_lower for keyword in config.rules.drums.filename_contains)
+    # 2. Check for specific filename rules (case-insensitive)
+    bass_match = any(keyword.lower() in filename_lower for keyword in config.rules.bass.filename_contains)
+    drums_match = any(keyword.lower() in filename_lower for keyword in config.rules.drums.filename_contains)
+    vox_match = False
+    if config.rules.vox:
+        vox_match = any(keyword.lower() in filename_lower for keyword in config.rules.vox.filename_contains)
     
     # 3. Filename rule: Bass transposition
     if bass_match:
@@ -38,8 +45,14 @@ def process_midi(midi: mido.MidiFile, file_path: str, config: Config) -> mido.Mi
         if config.rules.drums.track_name:
             midi = set_track_names(midi, config.rules.drums.track_name)
     
-    # 5. Wildcard rule: Apply if no other rules matched
-    if not bass_match and not drums_match and config.rules.wildcard:
+    # 5. Filename rule: Vox transposition / track name
+    if vox_match and config.rules.vox:
+        midi = transpose_notes(midi, config.rules.vox.transpose_semitones)
+        if config.rules.vox.track_name:
+            midi = set_track_names(midi, config.rules.vox.track_name)
+    
+    # 6. Wildcard rule: Apply if no other rules matched
+    if not bass_match and not drums_match and not vox_match and config.rules.wildcard:
         if config.rules.wildcard.transpose_semitones is not None:
             midi = transpose_notes(midi, config.rules.wildcard.transpose_semitones)
         if config.rules.wildcard.track_name:
@@ -47,7 +60,7 @@ def process_midi(midi: mido.MidiFile, file_path: str, config: Config) -> mido.Mi
         if config.rules.wildcard.max_note_length:
             midi = cap_note_lengths(midi, config.rules.wildcard.max_note_length)
     
-    # 6. Global: Force channel zero
+    # 7. Global: Force channel zero
     if config.global_.force_channel_zero:
         midi = force_channel_zero(midi)
     

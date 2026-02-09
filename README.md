@@ -51,6 +51,7 @@ global:
   ignore_filename_contains: <list of strings (optional)>
   ignore_folders: <list of folder names (optional)>
   strip_keep_meta: <list of meta subtypes (optional)>
+  strip_keep_channel: <list of channel message types (optional)>
 
 rules:
   bass:
@@ -92,6 +93,11 @@ rules:
 - **Type**: list of strings (optional, default: `[]`)
 - **Description**: When `strip_to_notes` is enabled, these meta message subtypes are kept in addition to notes and `end_of_track`. Common values: `set_tempo` (tempo changes), `time_signature`, `key_signature`.
 - **Example**: `strip_keep_meta: ["set_tempo"]`
+
+#### `global.strip_keep_channel`
+- **Type**: list of strings (optional, default: `[]`)
+- **Description**: When `strip_to_notes` is enabled, these channel (non-meta) message types are kept. Use this for pitch bend and similar: `pitchwheel` keeps pitch bend messages so pitch adjustments are preserved.
+- **Example**: `strip_keep_channel: ["pitchwheel"]`
 
 ### Rules
 

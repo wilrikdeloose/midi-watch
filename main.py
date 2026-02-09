@@ -15,7 +15,7 @@ def process_file(file_path: str, config, watcher=None) -> bool:
         # Skip if filename contains any ignore word
         if config.global_.ignore_filename_contains:
             filename_lower = os.path.basename(file_path).lower()
-            if any(ignore in filename_lower for ignore in config.global_.ignore_filename_contains):
+            if any(ignore.lower() in filename_lower for ignore in config.global_.ignore_filename_contains):
                 return False
         # Skip if path contains any ignored folder name (e.g. .../reaper/...)
         if config.global_.ignore_folders:

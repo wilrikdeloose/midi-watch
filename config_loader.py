@@ -14,6 +14,7 @@ class GlobalConfig:
     ignore_filename_contains: List[str]
     ignore_folders: List[str]
     strip_keep_meta: List[str]
+    strip_keep_channel: List[str]
 
 
 @dataclass
@@ -33,6 +34,14 @@ class DrumsRule:
 
 
 @dataclass
+class VoxRule:
+    """Vox transposition/track-name rule."""
+    filename_contains: List[str]
+    transpose_semitones: int
+    track_name: Optional[str] = None
+
+
+@dataclass
 class WildcardRule:
     """Wildcard rule that applies to files not matching other rules."""
     transpose_semitones: Optional[int] = None
@@ -45,6 +54,7 @@ class RulesConfig:
     """Filename-based rules."""
     bass: BassRule
     drums: DrumsRule
+    vox: Optional[VoxRule] = None
     wildcard: Optional[WildcardRule] = None
 
 
@@ -66,6 +76,7 @@ class Config:
             ignore_filename_contains=global_data.get("ignore_filename_contains", []),
             ignore_folders=global_data.get("ignore_folders", []),
             strip_keep_meta=global_data.get("strip_keep_meta", []),
+            strip_keep_channel=global_data.get("strip_keep_channel", []),
         )
 
         bass_data = rules_data.get("bass", {})
@@ -82,6 +93,15 @@ class Config:
             track_name=drums_data.get("track_name"),
         )
 
+        vox_data = rules_data.get("vox", {})
+        vox_rule = None
+        if vox_data:
+            vox_rule = VoxRule(
+                filename_contains=vox_data.get("filename_contains", []),
+                transpose_semitones=vox_data.get("transpose_semitones", 0),
+                track_name=vox_data.get("track_name"),
+            )
+
         wildcard_data = rules_data.get("wildcard", {})
         wildcard_rule = None
         if wildcard_data:
@@ -91,7 +111,7 @@ class Config:
                 max_note_length=wildcard_data.get("max_note_length"),
             )
 
-        rules_config = RulesConfig(bass=bass_rule, drums=drums_rule, wildcard=wildcard_rule)
+        rules_config = RulesConfig(bass=bass_rule, drums=drums_rule, vox=vox_rule, wildcard=wildcard_rule)
 
         return cls(global_=global_config, rules=rules_config)
 

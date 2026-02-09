@@ -12,6 +12,10 @@ global:
   # When stripping to notes, keep these meta message types (e.g. set_tempo for tempo changes)
   strip_keep_meta:
     - set_tempo
+    - key_signature
+  # When stripping to notes, keep these channel message types (e.g. pitchwheel for pitch bend)
+  strip_keep_channel:
+    - pitchwheel
 
 rules:
   bass:
@@ -24,5 +28,10 @@ rules:
       - "drum"
     max_note_length: "1/8"
     track_name: "Drums"
+  vox:
+    filename_contains:
+      - "vox"
+    track_name: "Vox"
+    transpose_semitones: 12
   wildcard:
     track_name: "Other"

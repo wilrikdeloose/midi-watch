@@ -3,10 +3,16 @@ from typing import List, Dict, Tuple, Optional
 import mido
 
 
-def strip_to_notes(midi: mido.MidiFile, keep_meta_subtypes: List[str] = None) -> mido.MidiFile:
-    """Strip all events except notes, end_of_track, and optionally other meta types (e.g. set_tempo)."""
+def strip_to_notes(
+    midi: mido.MidiFile,
+    keep_meta_subtypes: List[str] = None,
+    keep_channel_types: List[str] = None,
+) -> mido.MidiFile:
+    """Strip all events except notes, end_of_track, and optionally other meta/channel types (e.g. set_tempo, pitchwheel)."""
     if keep_meta_subtypes is None:
         keep_meta_subtypes = []
+    if keep_channel_types is None:
+        keep_channel_types = []
     new_tracks = []
     
     for track in midi.tracks:
@@ -21,6 +27,9 @@ def strip_to_notes(midi: mido.MidiFile, keep_meta_subtypes: List[str] = None) ->
                 keep = True
             elif msg.type == 'end_of_track' or msg.type in keep_meta_subtypes:
                 # In mido, meta messages use .type for the specific type (set_tempo, end_of_track), not 'meta_message'
+                keep = True
+            elif msg.type in keep_channel_types:
+                # Channel messages (e.g. pitchwheel for pitch bend)
                 keep = True
             
             if keep:
